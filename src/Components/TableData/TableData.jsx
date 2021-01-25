@@ -10,14 +10,16 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Favorite from '@material-ui/icons/Favorite';
+import FavoriteBorder from '@material-ui/icons/FavoriteBorder';
+
 
 const columns = [
-    { id: 'bank', label: 'BankId',align: 'center', },
+    { id: 'bank_name', label: 'Bank Name',align: 'center', },
     { id: 'ifsc', label: 'IFSC Code',align: 'center', },
     {
         id: 'branch',
@@ -39,13 +41,13 @@ const columns = [
     },
     {
         id: 'district',
-        label: 'district',
+        label: 'District',
         minWidth: 170,
         align: 'center',
     },
     {
         id: 'state',
-        label: 'state',
+        label: 'State',
         minWidth: 170,
         align: 'center',
     },
@@ -53,16 +55,24 @@ const columns = [
 
 const cities = [
     {
-        value: 'banglore',
-        label: 'banglore',
+        value: 'Bangalore',
+        label: 'Bangalore',
     },
     {
-        value: 'mumbai',
-        label: 'mumbai',
+        value: 'Mumbai',
+        label: 'Mumbai',
     },
     {
         value: 'Delhi',
         label: 'Delhi',
+    },
+    {
+        value: 'Kolkata',
+        label: 'Kolkata',
+    },
+    {
+        value: 'Chennai',
+        label: 'Chennai',
     },
 ];
 
@@ -76,18 +86,17 @@ export default function TableData() {
     const [city, setCity] = useState('');
     const [search, setsearch] = useState('')
     const [rows, setrows] = useState([])
-
-    console.log(rows)
+    const [favourites,setFavourites]=useState([])
+    const [value,setValue]=useState({})
 
     useEffect(() => {
         getAllData()
         throttled.current(search)
     },[search])
-
+ 
     const throttled = useRef(throttle((newValue) => console.log(newValue), 1000))
 
     const getAllData = () => {
-        console.log(search)
         axios.get(`https://bankserver.herokuapp.com/api/branches?q=${search}`).then((res) => {
             setrows(res.data.results)
         })
@@ -96,7 +105,8 @@ export default function TableData() {
 
 
     const handleChange = (event) => {
-        setCity(event.target.value);
+        setsearch(event.target.value)
+        setCity(event.target.value)
     };
 
     const handleSearch = (e)=>{
@@ -111,8 +121,33 @@ export default function TableData() {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
+    const handleFavouritesBank=(event)=>{
+        let index=event.target.name
+        if(value[index]==undefined){
+            setValue({...value,[index]:true})
+        }
+        else{
+            let v=value[index]
+            setValue({...value,[index]:!v})
+        }
+        
+        favouriteList(index)
+        
+        
+        
+    }
+    
+    const favouriteList=(index)=>{
+        
+        if(!value[index]){
+            setFavourites([...favourites,rows[index]])
+        }
+        else{
+            favourites.splice(index,1)
+            setFavourites(favourites)
+        }
 
-
+    }
     return (
         <Paper className={classes.root}>
             <div className={classes.searchBar} >
@@ -146,6 +181,7 @@ export default function TableData() {
                                     key={column.id}
                                     align={column.align}
                                     style={{ minWidth: column.minWidth }}
+                                    className={classes.head}
                                 >
                                     {column.label}
                                 </TableCell>
@@ -158,6 +194,13 @@ export default function TableData() {
                                 <TableRow hover role="checkbox" tabIndex={-1} key={index+1}>
                                     <TableCell key={index+1} align='center' >
                                         {index+1}
+                                        <FormControlLabel
+                                            control={<Checkbox icon={<FavoriteBorder />}  checkedIcon={<Favorite />}  />}
+                                            onChange={handleFavouritesBank}
+                                            key={index}
+                                            name={index}
+
+                                        />
                                     </TableCell>
                                     {columns.map((column) => {
                                         const value = row[column.id];
@@ -197,5 +240,8 @@ const useStyles = makeStyles({
         display: 'flex',
         justifyContent: 'space-between',
         padding: 20
+    },
+    head:{
+        fontWeight:'bold',
     }
 });
