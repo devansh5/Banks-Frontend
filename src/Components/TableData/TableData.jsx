@@ -16,6 +16,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Favorite from '@material-ui/icons/Favorite';
 import FavoriteBorder from '@material-ui/icons/FavoriteBorder';
+import Button from '@material-ui/core/Button';
 
 
 const columns = [
@@ -78,7 +79,7 @@ const cities = [
 
 
 
-
+let fav=[]
 export default function TableData() {
     const classes = useStyles();
     const [page, setPage] = useState(0);
@@ -88,20 +89,18 @@ export default function TableData() {
     const [rows, setrows] = useState([])
     const [favourites,setFavourites]=useState([])
     const [value,setValue]=useState({})
-
+    const[show,setShow]=useState(false)
     useEffect(() => {
         getAllData()
-        throttled.current(search)
+        localStorage.setItem("favourites",JSON.stringify({}))
     },[search])
  
-    const throttled = useRef(throttle((newValue) => console.log(newValue), 1000))
 
     const getAllData = () => {
         axios.get(`https://bankserver.herokuapp.com/api/branches?q=${search}`).then((res) => {
             setrows(res.data.results)
         })
     }
-
 
 
     const handleChange = (event) => {
@@ -125,13 +124,16 @@ export default function TableData() {
         let index=event.target.name
         if(value[index]==undefined){
             setValue({...value,[index]:true})
+            
         }
         else{
             let v=value[index]
             setValue({...value,[index]:!v})
+            
         }
         
         favouriteList(index)
+        // console.log(value)
         
         
         
@@ -146,8 +148,17 @@ export default function TableData() {
             favourites.splice(index,1)
             setFavourites(favourites)
         }
+        
 
     }
+    const showfavouritedBank=()=>{
+        localStorage.setItem('favourites',JSON.stringify(favourites))
+        let favouritesbank=localStorage.getItem("favourites")
+        console.log(JSON.parse(favouritesbank))
+    }
+    
+    
+    
     return (
         <Paper className={classes.root}>
             <div className={classes.searchBar} >
@@ -166,6 +177,9 @@ export default function TableData() {
                         </MenuItem>
                     ))}
                 </TextField>
+                <Button variant="contained" color="primary" onClick={showfavouritedBank}>
+                            Favourites bank
+                </Button>
                 <TextField id="standard-basic" onChange={handleSearch} label="Search" />
 
             </div>
@@ -199,7 +213,6 @@ export default function TableData() {
                                             onChange={handleFavouritesBank}
                                             key={index}
                                             name={index}
-
                                         />
                                     </TableCell>
                                     {columns.map((column) => {
