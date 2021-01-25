@@ -88,7 +88,7 @@ export default function TableData() {
 
     const getAllData = () => {
         console.log(search)
-        axios.get(`https://bankserver.herokuapp.com/api/branches/autocomplete?q=${search}`).then((res) => {
+        axios.get(`https://bankserver.herokuapp.com/api/branches?q=${search}`).then((res) => {
             setrows(res.data.results)
         })
     }
